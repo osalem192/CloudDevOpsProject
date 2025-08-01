@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'osalem192/ivolve_finalproject'
+        IMAGE_NAME = 'osalem192/triak'
         IMAGE_TAG = "v${env.BUILD_ID}"
     }
 
@@ -42,8 +42,8 @@ pipeline {
         stage('Update Deployment YAML') {
             steps {
                 script {
-                    sh "sed -i 's|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' Kuberenetes/app-deployment.yaml"
-                    sh "cp Kuberenetes/app-deployment.yaml ./app-deployment.yaml"
+                    sh "sed -i 's|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' Kubernetes/app-deployment.yaml"
+                    sh "cp Kubernetes/app-deployment.yaml ./app-deployment.yaml"
                 }
             }
         }
