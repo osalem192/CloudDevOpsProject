@@ -52,24 +52,24 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'GitHub_Credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
-                        // 1. Update deployment YAML
-                        sh 'rm -rf CloudDevOpsProject_ArgoCD_SyncRepo'
-                        // 2. Clone the ArgoCD repo into a subdirectory
-                        sh 'git clone https://github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git'
-                        sh 'git fetch origin'
-                        sh 'git branch --set-upstream-to=origin/main main'
-                        sh 'git pull --rebase'
-                        // 3. Copy the updated file into the cloned repo
-                        sh "cp ./Kubernetes/app-deployment.yaml ./CloudDevOpsProject_ArgoCD_SyncRepo/"
-                        sh 'cd CloudDevOpsProject_ArgoCD_SyncRepo'
-                        // 4. Commit & push only if there are actual changes
-                        sh 'git config user.name "jenkins"'
-                        sh 'git config user.email "jenkins@myorg.com"'
-
-                        sh 'git add app-deployment.yaml'
-                        sh 'git commit -m "Update deployment image to ${IMAGE_TAG}"'
-                        sh "git push https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git main"
-                        echo "✅ Successfully pushed to ArgoCD repository"
+                        sh '''
+                            rm -rf CloudDevOpsProject_ArgoCD_SyncRepo
+                            git clone https://github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git
+                            cp ./Kubernetes/app-deployment.yaml ./CloudDevOpsProject_ArgoCD_SyncRepo/
+                            cd CloudDevOpsProject_ArgoCD_SyncRepo
+                            git config user.name "jenkins"
+                            git config user.email "jenkins@myorg.com"
+                            
+                            if git diff --quiet; then
+                                echo "No changes detected in deployment file"
+                            else
+                                git add app-deployment.yaml
+                                git commit -m "Update deployment image to ${IMAGE_TAG}"
+                                git pull --rebase
+                                git push https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git main
+                                echo "✅ Successfully pushed to ArgoCD repository"
+                            fi
+                        '''
                     }
                 }
             }
