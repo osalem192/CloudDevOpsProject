@@ -66,14 +66,10 @@ pipeline {
                         sh 'git config user.name "jenkins"'
                         sh 'git config user.email "jenkins@myorg.com"'
 
-                        if [ -n "$(git status --porcelain)" ]; then
                         sh 'git add .'
                         sh 'git commit -m "Update deployment image to ${IMAGE_TAG}"'
                         sh 'git push origin main'
                         echo "✅ Successfully pushed to ArgoCD repository"
-                        else
-                        echo "ℹ️ No changes to commit"
-                        fi
                     }
                 }
             }
