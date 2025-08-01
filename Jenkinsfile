@@ -52,17 +52,20 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'GitHub_Credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
-                        sh "git config --global user.name 'Jenkins'"
-                        sh "git config --global user.email 'Jenkins@gmail.com'"
+                        sh "git config user.name 'Jenkins'"
+                        sh "git config user.email 'Jenkins@gmail.com'"
                         sh "git add app-deployment.yaml"
-                        sh "git remote set-url origin 'https://github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git'"
-                        sh "git pull"
-                        sh "git commit -m 'Jenkins build:${IMAGE_TAG}'"
-                        sh "git push https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git main"
+                        sh "git remote set-url origin https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git"
+                        sh "git fetch origin"
+                        sh "git branch --set-upstream-to=origin/main main"
+                        sh "git pull --rebase"
+                        sh 'git commit -m "Jenkins build:${IMAGE_TAG}"'
+                        sh "git push origin main"
                     }
                 }
             }
         }
+
     }
 
     post {
