@@ -54,12 +54,14 @@ pipeline {
                     script {
                         sh "git config user.name 'Jenkins'"
                         sh "git config user.email 'Jenkins@gmail.com'"
-                        sh "git add app-deployment.yaml"
                         sh "git remote set-url origin https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git"
                         sh "git fetch origin"
                         sh "git branch --set-upstream-to=origin/main main"
                         sh "git pull --rebase"
-                        sh 'git commit -m "Jenkins build:${IMAGE_TAG}"'
+
+                        // Only add/commit after pulling to avoid conflict
+                        sh "git add app-deployment.yaml"
+                        sh 'git diff --cached --quiet || git commit -m "Jenkins build:${IMAGE_TAG}"'
                         sh "git push origin main"
                     }
                 }
