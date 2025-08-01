@@ -30,27 +30,6 @@ resource "aws_vpc_security_group_egress_rule" "allowed_jenkins_eg_ports" {
   }
 }
 
-
-
-
-
-
-resource "aws_launch_template" "jenkins" {
-  name_prefix   = "jenkins-template"
-  image_id      = var.ami_id
-  instance_type = var.instance_type
-  # key_name      = var.key_name
-
-  network_interfaces {
-    associate_public_ip_address = true
-    security_groups             = [aws_security_group.jenkins_sg.id]
-  }
-  tags = {
-    Name = "Jenkins"
-  }
-}
-
-
 resource "aws_instance" "main" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
