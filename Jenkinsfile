@@ -55,9 +55,9 @@ pipeline {
                         sh "git config --global user.name 'Jenkins'"
                         sh "git config --global user.email 'Jenkins@gmail.com'"
                         sh "git add app-deployment.yaml"
-                        sh "git remote set-url origin 'https://github.com/osalem192/Jenkins_App.git'"
+                        sh "git remote set-url origin 'https://github.com/osalem192/CloudDevOpsProject.git'"
                         sh "git commit -m 'Jenkins build:${IMAGE_TAG}'"
-                        sh "git push https://${USERNAME}:${PASSWORD}@github.com/osalem192/Jenkins_App.git main"
+                        sh "git push https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject.git main"
                     }
                 }
             }
