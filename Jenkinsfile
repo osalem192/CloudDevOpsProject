@@ -48,25 +48,43 @@ pipeline {
             }
         }
 
-        stage('Push to GitHub') {
+        stage('Update ArgoCD Repo') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'GitHub_Credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
-                        sh "git config user.name 'Jenkins'"
-                        sh "git config user.email 'Jenkins@gmail.com'"
-                        sh "git remote set-url origin https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git"
-                        sh "git fetch origin"
-                        sh "git branch --set-upstream-to=origin/main main"
-                        sh "git pull --rebase"
+                        // 1. Update deployment YAML
+                        sh """
+                        sed -i 's|image:.*|image: ${IMAGE_TAG}|' Kubernetes/app-deployment.yaml
+                        """
 
-                        // Only add/commit after pulling to avoid conflict
-                        sh "git add app-deployment.yaml"
-                        sh 'git diff --cached --quiet || git commit -m "Jenkins build:${IMAGE_TAG}"'
-                        sh "git push origin main"
+                        // 2. Clone the ArgoCD repo into a subdirectory
+                        sh """
+                        git clone https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git argocd-repo
+                        """
+
+                        // 3. Copy the updated file into the cloned repo
+                        sh "cp Kubernetes/app-deployment.yaml argocd-repo/"
+
+                        // 4. Commit & push only if there are actual changes
+                        sh """
+                        cd argocd-repo
+                        git config user.name "jenkins"
+                        git config user.email "jenkins@myorg.com"
+
+                        if [ -n "$(git status --porcelain)" ]; then
+                        git add .
+                        git commit -m "Update deployment image to ${IMAGE_TAG}"
+                        git push origin main
+                        echo "✅ Successfully pushed to ArgoCD repository"
+                        else
+                        echo "ℹ️ No changes to commit"
+                        fi
+                        """
                     }
                 }
             }
         }
+
 
     }
 
