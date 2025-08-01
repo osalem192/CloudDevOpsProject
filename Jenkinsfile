@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'osalem192/triak'
+        IMAGE_NAME = 'osalem192/iVolve_finalproject'
         IMAGE_TAG = "v${env.BUILD_ID}"
     }
 
