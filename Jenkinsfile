@@ -53,20 +53,20 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'GitHub_Credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
                         // 1. Update deployment YAML
-                        sh "sed -i 's|image:.*|image: ${IMAGE_TAG}|' Kubernetes/app-deployment.yaml"
-
+                        sh 'rm -rf CloudDevOpsProject_ArgoCD_SyncRepo'
                         // 2. Clone the ArgoCD repo into a subdirectory
-                        git branch: 'main', url: 'https://github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git'
-
+                        sh 'git clone https://github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git'
+                        sh 'git fetch origin'
+                        sh 'git branch --set-upstream-to=origin/main main'
+                        sh 'git pull --rebase'
                         // 3. Copy the updated file into the cloned repo
-                        sh "cp Kubernetes/app-deployment.yaml argocd-repo/"
-
+                        sh "cp ./Kubernetes/app-deployment.yaml ./CloudDevOpsProject_ArgoCD_SyncRepo/"
+                        sh 'cd CloudDevOpsProject_ArgoCD_SyncRepo'
                         // 4. Commit & push only if there are actual changes
-                        sh "cd argocd-repo"
                         sh 'git config user.name "jenkins"'
                         sh 'git config user.email "jenkins@myorg.com"'
 
-                        sh 'git add .'
+                        sh 'git add app-deployment.yaml'
                         sh 'git commit -m "Update deployment image to ${IMAGE_TAG}"'
                         sh "git push https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git main"
                         echo "✅ Successfully pushed to ArgoCD repository"
