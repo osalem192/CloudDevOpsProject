@@ -1,0 +1,46 @@
+---
+- name: Ensure dnf/yum cache is updated
+  yum:
+    update_cache: yes
+
+- name: Install Java (OpenJDK 21 for Amazon Linux 2023)
+  yum:
+    name: java-21-amazon-corretto
+    state: present
+
+- name: Add Jenkins repo
+  get_url:
+    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+    mode: '0644'
+
+- name: Import Jenkins GPG key
+  rpm_key:
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    state: present
+
+- name: Install Jenkins
+  yum:
+    name: jenkins
+    state: present
+
+- name: Ensure Jenkins service is started and enabled
+  systemd:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Wait for Jenkins to initialize and generate the admin password
+  wait_for:
+    path: /var/lib/jenkins/secrets/initialAdminPassword
+    state: present
+    timeout: 60
+
+- name: Show Jenkins initial admin password
+  become: true
+  shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+  register: jenkins_pass
+
+- name: Print Jenkins password
+  debug:
+    msg: "Jenkins default admin password is: {{ jenkins_pass.stdout }}"

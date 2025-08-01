@@ -1,0 +1,56 @@
+---
+- name: Install ArgoCD on EKS Cluster
+  hosts: local
+  gather_facts: false
+  tasks:
+    - name: Ensure 'argocd' namespace exists
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: argocd
+        state: present
+        kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+
+    - name: Add ArgoCD Helm repository
+      community.kubernetes.helm_repository:
+        name: argo
+        repo_url: https://argoproj.github.io/argo-helm
+
+    - name: Install ArgoCD via Helm
+      community.kubernetes.helm:
+        name: argocd
+        chart_ref: argo/argo-cd
+        release_namespace: argocd
+        kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+        create_namespace: false
+        update_repo_cache: true
+        values:
+          server:
+            service:
+              type: LoadBalancer
+
+    - name: Wait for ArgoCD server to become ready
+      kubernetes.core.k8s_info:
+        kind: Service
+        namespace: argocd
+        name: argocd-server
+        kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+      register: argocd_service
+      retries: 10
+      delay: 10
+      until: argocd_service.resources[0].status.loadBalancer.ingress is defined
+
+    - name: Get ArgoCD admin password
+      shell: |
+        kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
+      register: argocd_password
+      changed_when: false
+
+    - name: Show ArgoCD admin password
+      debug:
+        msg: "ArgoCD admin password is: {{ argocd_password.stdout }}"
+
+
+
+
+aws eks update-nodegroup-config --cluster-name iVolve_Cluster --nodegroup-name iVolve_Cluster-node-group --scaling-config minSize=3,maxSize=7,desiredSize=6
