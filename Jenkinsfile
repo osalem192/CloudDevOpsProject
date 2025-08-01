@@ -56,6 +56,7 @@ pipeline {
                         sh "git config --global user.email 'Jenkins@gmail.com'"
                         sh "git add app-deployment.yaml"
                         sh "git remote set-url origin 'https://github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git'"
+                        sh "git pull"
                         sh "git commit -m 'Jenkins build:${IMAGE_TAG}'"
                         sh "git push https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git main"
                     }
