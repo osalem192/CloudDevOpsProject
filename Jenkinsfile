@@ -68,7 +68,7 @@ pipeline {
 
                         sh 'git add .'
                         sh 'git commit -m "Update deployment image to ${IMAGE_TAG}"'
-                        sh 'git push origin main'
+                        sh "git push https://${USERNAME}:${PASSWORD}@github.com/osalem192/CloudDevOpsProject_ArgoCD_SyncRepo.git main"
                         echo "✅ Successfully pushed to ArgoCD repository"
                     }
                 }
